@@ -3,7 +3,7 @@ import random
 from constants import *
 
 class Debris(pygame.sprite.Sprite):
-    def __init__(self, x, y, radius):
+    def __init__(self, x, y, radius=DEBRIS_RADIUS):
         if hasattr(self, "containers"):
             super().__init__(self.containers)
         else:
@@ -16,7 +16,6 @@ class Debris(pygame.sprite.Sprite):
         self.velocity = direction * speed
         # How long the debris lasts in seconds:
         self.timer = random.uniform(0.2, 0.5)
-        self.radius = DEBRIS_RADIUS
 
     def draw(self, screen):
         pygame.draw.circle(

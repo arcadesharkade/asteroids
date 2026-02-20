@@ -1,5 +1,6 @@
 import pygame
 import sys
+import time
 from constants import *
 from logger import log_state
 from logger import log_event
@@ -32,6 +33,8 @@ def main():
     
     # Variable initialization and object creation:
     dt = 0  
+    player_alive = True
+    player_death_timer = 0
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     clock = pygame.time.Clock()
     player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
@@ -39,7 +42,7 @@ def main():
     scoreboard = Scoreboard(20, 20)
 
     # Game loop
-    while True:
+    while player_alive == True:
         log_state()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -50,8 +53,11 @@ def main():
         for asteroid in asteroids:
             if player.collides_with(asteroid):
                 log_event("player_hit")
+                player.kill()
+                player_alive = False
+                for _ in range(10):
+                    Debris(player.position.x, player.position.y)
                 print("Game over!")
-                sys.exit()
             for shot in shots:
                 if shot.collides_with(asteroid):
                     log_event("asteroid_shot")
@@ -61,12 +67,27 @@ def main():
                     
                     # Create an explosion effect:
                     for _ in range(10):
-                        Debris(asteroid.position.x, asteroid.position.y, DEBRIS_RADIUS)
-
+                        Debris(asteroid.position.x, asteroid.position.y)
         for item in drawable:
             item.draw(screen)
         pygame.display.flip()
         dt = clock.tick(60) / 1000
+
+    while player_alive == False:
+        log_state()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return
+        screen.fill("black")
+        for item in updatable:
+            item.update(dt)
+        for item in drawable:
+            item.draw(screen)
+        pygame.display.flip()
+        dt = clock.tick(60) / 1000
+        player_death_timer += dt
+        if player_death_timer >= 3:
+            sys.exit()
 
 if __name__ == "__main__":
     main()
