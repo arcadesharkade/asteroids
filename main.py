@@ -1,7 +1,6 @@
 import pygame
 import sys
-from constants import SCREEN_WIDTH
-from constants import SCREEN_HEIGHT
+from constants import *
 from logger import log_state
 from logger import log_event
 from player import Player
@@ -9,17 +8,13 @@ from shot import Shot
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
 from scoreboard import Scoreboard
+from debris import Debris
 
 def main():
     print("Starting Asteroids with pygame version: 2.6.1")
     print(f"Screen width: {SCREEN_WIDTH}")
     print(f"Screen height: {SCREEN_HEIGHT}")
     pygame.init()
-    
-    # Variable initialization and object creation:
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    clock = pygame.time.Clock()
-    dt = 0  
     
     # Creating containers for the different sprite groups:
     updatable = pygame.sprite.Group()
@@ -33,6 +28,12 @@ def main():
     AsteroidField.containers = updatable
     Shot.containers = (drawable, updatable, shots)
     Scoreboard.containers = (drawable, updatable)
+    Debris.containers = (drawable, updatable)
+    
+    # Variable initialization and object creation:
+    dt = 0  
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    clock = pygame.time.Clock()
     player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
     asteroidfield = AsteroidField()
     scoreboard = Scoreboard(20, 20)
@@ -57,6 +58,11 @@ def main():
                     shot.kill()
                     asteroid.split()
                     scoreboard.increase_score(100)
+                    
+                    # Create an explosion effect:
+                    for _ in range(10):
+                        Debris(asteroid.position.x, asteroid.position.y, DEBRIS_RADIUS)
+
         for item in drawable:
             item.draw(screen)
         pygame.display.flip()
