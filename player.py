@@ -1,6 +1,8 @@
 from circleshape import CircleShape
 from shot import Shot
+from debris import Debris
 from constants import *
+from logger import log_event
 import pygame
 
 class Player(CircleShape):
@@ -52,3 +54,13 @@ class Player(CircleShape):
             shot = Shot(self.position.x, self.position.y)
             shot.velocity = pygame.Vector2(0,1).rotate(self.rotation) * PLAYER_SHOOT_SPEED
             self.shot_timer = PLAYER_SHOOT_COOLDOWN_SECONDS
+
+    def die(self):
+        # Remove the player from the game:
+        self.kill()
+        log_event("player_hit")
+        print("Game over!")
+        # Spawn debris at the player's position:
+        for _ in range(10):
+            Debris(self.position.x, self.position.y)
+

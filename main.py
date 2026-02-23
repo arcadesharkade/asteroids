@@ -10,6 +10,7 @@ from asteroid import Asteroid
 from asteroidfield import AsteroidField
 from scoreboard import Scoreboard
 from debris import Debris
+from ui import Menu
 
 def main():
     print("Starting Asteroids with pygame version: 2.6.1")
@@ -32,62 +33,71 @@ def main():
     Debris.containers = (drawable, updatable)
     
     # Variable initialization and object creation:
-    dt = 0  
+    dt = 0 
+    STATE_START = 0
+    STATE_PLAYING = 1
+    STATE_GAME_OVER = 2
+    current_state = STATE_START
     player_alive = True
-    player_death_timer = 0
+    player_death_timer = 3
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     clock = pygame.time.Clock()
     player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
     asteroidfield = AsteroidField()
     scoreboard = Scoreboard(20, 20)
+    start_menu = Menu("Asteroids", "Press SPACE to Start")
+    game_over_screen = Menu("GAME OVER", "Press any key to Exit")
 
     # Game loop
-    while player_alive == True:
-        log_state()
+    while True:
+        # 1. HANDLE INPUT:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
-        screen.fill("black")
-        for item in updatable:
-            item.update(dt)
-        for asteroid in asteroids:
-            if player.collides_with(asteroid):
-                log_event("player_hit")
-                player.kill()
-                player_alive = False
-                for _ in range(10):
-                    Debris(player.position.x, player.position.y)
-                print("Game over!")
-            for shot in shots:
-                if shot.collides_with(asteroid):
-                    log_event("asteroid_shot")
-                    shot.kill()
-                    asteroid.split()
-                    scoreboard.increase_score(100)
-                    
-                    # Create an explosion effect:
-                    for _ in range(10):
-                        Debris(asteroid.position.x, asteroid.position.y)
-        for item in drawable:
-            item.draw(screen)
-        pygame.display.flip()
-        dt = clock.tick(60) / 1000
 
-    while player_alive == False:
-        log_state()
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                return
+            if current_state == STATE_START:
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                    current_state = STATE_PLAYING
+        
+            elif current_state == STATE_GAME_OVER:
+                if event.type == pygame.KEYDOWN:
+                    return
+
+        # 2. UPDATE LOGIC:
+        if current_state == STATE_PLAYING:
+            log_state()
+            for item in updatable:
+                item.update(dt)
+            if player_alive:
+                for asteroid in asteroids:
+                    if player.collides_with(asteroid):
+                        player.die()
+                        player_alive = False
+                        current_state = STATE_GAME_OVER
+                    for shot in shots:
+                        if shot.collides_with(asteroid):
+                            log_event("asteroid_shot")
+                            shot.kill()
+                            asteroid.split()
+                            scoreboard.increase_score(100)
+                            # Create an explosion effect:
+                            for _ in range(10):
+                                Debris(asteroid.position.x, asteroid.position.y)
+            else:
+                player_death_timer -= dt
+                if player_death_timer <= 0:
+                    sys.exit()
+        # 3. DRAWING LOCIG:
         screen.fill("black")
-        for item in updatable:
-            item.update(dt)
-        for item in drawable:
-            item.draw(screen)
+        if current_state == STATE_START:
+            start_menu.draw(screen, SCREEN_WIDTH, SCREEN_HEIGHT)
+        elif current_state == STATE_PLAYING:
+            for item in drawable:
+                item.draw(screen)
+        elif current_state == STATE_GAME_OVER:
+            game_over_screen.draw(screen, SCREEN_WIDTH, SCREEN_HEIGHT)
         pygame.display.flip()
         dt = clock.tick(60) / 1000
-        player_death_timer += dt
-        if player_death_timer >= 3:
-            sys.exit()
 
 if __name__ == "__main__":
     main()
