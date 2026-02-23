@@ -1,16 +1,10 @@
 import pygame
 import sys
 import time
-from constants import *
-from logger import log_state
-from logger import log_event
-from player import Player
-from shot import Shot
-from asteroid import Asteroid
-from asteroidfield import AsteroidField
-from scoreboard import Scoreboard
-from debris import Debris
-from ui import Menu
+from src import CircleShape, Menu, Scoreboard
+from src import log_state, log_event
+from src.constants import *
+from entities import Asteroid, AsteroidField, Debris, Player, Shot
 
 def main():
     print("Starting Asteroids with pygame version: 2.6.1")
@@ -34,9 +28,6 @@ def main():
     
     # Variable initialization and object creation:
     dt = 0 
-    STATE_START = 0
-    STATE_PLAYING = 1
-    STATE_GAME_OVER = 2
     current_state = STATE_START
     player_alive = True
     player_death_timer = 3
@@ -54,15 +45,12 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
-
             if current_state == STATE_START:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                     current_state = STATE_PLAYING
-        
             elif current_state == STATE_GAME_OVER:
                 if event.type == pygame.KEYDOWN:
                     return
-
         # 2. UPDATE LOGIC:
         if current_state == STATE_PLAYING:
             log_state()
@@ -87,7 +75,7 @@ def main():
                 player_death_timer -= dt
                 if player_death_timer <= 0:
                     sys.exit()
-        # 3. DRAWING LOCIG:
+        # 3. DRAWING LOGIC:
         screen.fill("black")
         if current_state == STATE_START:
             start_menu.draw(screen, SCREEN_WIDTH, SCREEN_HEIGHT)
