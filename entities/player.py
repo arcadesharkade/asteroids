@@ -59,7 +59,6 @@ class Player(CircleShape):
         # Remove the player from the game:
         self.kill()
         log_event("player_hit")
-        print("Game over!")
         # Spawn debris at the player's position:
         for _ in range(10):
             Debris(self.position.x, self.position.y)
